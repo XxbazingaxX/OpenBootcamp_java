@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public class Tema1_ejer2 {
+public class Tema2 {
 
     public static void main(String[] args){
 
