@@ -2,11 +2,11 @@ package Tema7_9;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Scanner;
 import java.util.Vector;
-
-import org.omg.CORBA.portable.InputStream;
-import org.omg.CORBA.portable.OutputStream;
 
 public class tema789 {
 
@@ -132,19 +132,141 @@ Si se dispara la excepción, mostraremos el mensaje "Esto no puede hacerse". Fin
 /*8.Utilizando InputStream y PrintStream, crea una función que reciba dos parámetros: "fileIn" y "fileOut".
 La tarea de la función será realizar la copia del fichero dado en el parámetro "fileIn" al fichero dado en "fileOut".*/
 
-    public static void CopiarArchivo() throws IOException{
-        InputStream entrada = new FileInputStream(new File(args[0]));
-        OutputStream salida = new FileOutputStream(new File(args[1]));
-
-        byte[] buffer = new byte[1024];
-        int length;
-
-        while ((length = entrada.read(buffer)) > 0) {
-            salida.write(buffer, 0,length);
+    private static void Copiar() throws IOException {
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Introduce el fichero de origen: ");
+            String fileIn = scanner.nextLine();
+            System.out.println("Introduce el fichero de destino: ");
+            String fileOut = scanner.nextLine();
+            CopiarArchivo(fileIn, fileOut);
         }
-        entrada.close();
-        salida.close();
 
+    }
+
+    public static void CopiarArchivo(String fileIn, String fileOut) throws IOException{
+        try {
+            FileInputStream in = new FileInputStream(fileIn);
+            byte[] buffer = new byte[1024];
+            int length;
+            in.close();
+
+            PrintStream out = new PrintStream(fileOut);
+            while ((length = in.read(buffer)) > 0) {
+                out.write(buffer, 0, length);
+            }
+            out.close();
+        } catch (Exception e) {
+            System.out.println("Excepcion: " + e.getMessage());
+        }
+
+    }
+
+//9.Sorpréndenos creando un programa de tu elección que utilice InputStream, PrintStream, excepciones, un HashMap y un ArrayList, LinkedList o array.
+
+    public static void Final(){
+        // Crear un HashMap que almacene el nombre y el número de teléfono de algunos contactos
+        HashMap<String, String> agenda = new HashMap<>();
+        agenda.put("Ana", "123456789");
+        agenda.put("Luis", "987654321");
+        agenda.put("Pedro", "456789123");
+
+        // Crear un ArrayList que almacene los nombres de los contactos en orden alfabético
+        ArrayList<String> nombres = new ArrayList<>(agenda.keySet());
+        Collections.sort(nombres);
+
+        // Crear un InputStream para leer datos del teclado
+        InputStream teclado = System.in;
+
+        // Crear un PrintStream para escribir datos en la pantalla
+        PrintStream pantalla = System.out;
+
+        // Crear un bucle para mostrar el menú y pedir una opción al usuario
+        boolean salir = false;
+        while (!salir) {
+            pantalla.println("Bienvenido a su agenda electrónica. Elija una opción:");
+            pantalla.println("1. Mostrar todos los contactos");
+            pantalla.println("2. Buscar un contacto por nombre");
+            pantalla.println("3. Añadir un nuevo contacto");
+            pantalla.println("4. Salir");
+
+            try {
+                // Leer la opción del usuario como un byte
+                byte opcion = (byte) teclado.read();
+
+                // Limpiar el buffer de entrada
+                teclado.skip(teclado.available());
+
+                // Ejecutar la opción elegida
+                switch (opcion) {
+                    case '1':
+                        mostrarContactos(pantalla, nombres, agenda);
+                        break;
+                    case '2':
+                        buscarContacto(pantalla, teclado, agenda);
+                        break;
+                    case '3':
+                        añadirContacto(pantalla, teclado, nombres, agenda);
+                        break;
+                    case '4':
+                        salir = true;
+                        pantalla.println("Gracias por usar el programa de Bing. Hasta pronto.");
+                        break;
+                    default:
+                        pantalla.println("Opción inválida. Inténtelo de nuevo.");
+                }
+            } catch (IOException e) {
+                // Capturar y mostrar la excepción en caso de error de entrada o salida
+                pantalla.println("Error de entrada o salida: " + e.getMessage());
+            }
+        }
+    }
+
+    // Método para mostrar todos los contactos en orden alfabético
+    public static void mostrarContactos(PrintStream pantalla, ArrayList<String> nombres, HashMap<String, String> agenda) {
+        pantalla.println("Estos son todos los contactos:");
+        for (String nombre : nombres) {
+            pantalla.println(nombre + ": " + agenda.get(nombre));
+        }
+    }
+
+    // Método para buscar un contacto por nombre y mostrar su número de teléfono
+    public static void buscarContacto(PrintStream pantalla, InputStream teclado, HashMap<String, String> agenda) throws IOException {
+        pantalla.println("Introduzca el nombre del contacto que desea buscar:");
+        // Leer el nombre del contacto como una línea de texto
+        BufferedReader lector = new BufferedReader(new InputStreamReader(teclado));
+        String nombre = lector.readLine();
+        // Comprobar si el nombre existe en el HashMap
+        if (agenda.containsKey(nombre)) {
+            // Mostrar el número de teléfono asociado al nombre
+            pantalla.println(nombre + ": " + agenda.get(nombre));
+        } else {
+            // Mostrar un mensaje de que el contacto no se ha encontrado
+            pantalla.println("No se ha encontrado ningún contacto con ese nombre.");
+        }
+    }
+
+    // Método para añadir un nuevo contacto al HashMap y al ArrayList
+    public static void añadirContacto(PrintStream pantalla, InputStream teclado, ArrayList<String> nombres, HashMap<String, String> agenda) throws IOException {
+        pantalla.println("Introduzca el nombre del nuevo contacto:");
+        // Leer el nombre del nuevo contacto como una línea de texto
+        BufferedReader lector = new BufferedReader(new InputStreamReader(teclado));
+        String nombre = lector.readLine();
+        // Comprobar si el nombre ya existe en el HashMap
+        if (agenda.containsKey(nombre)) {
+            // Mostrar un mensaje de que el contacto ya existe
+            pantalla.println("Ya existe un contacto con ese nombre.");
+        } else {
+            // Pedir el número de teléfono del nuevo contacto
+            pantalla.println("Introduzca el número de teléfono del nuevo contacto:");
+            // Leer el número de teléfono como una línea de texto
+            String telefono = lector.readLine();
+            // Añadir el nuevo contacto al HashMap y al ArrayList
+            agenda.put(nombre, telefono);
+            nombres.add(nombre);
+            Collections.sort(nombres);
+            // Mostrar un mensaje de confirmación
+            pantalla.println("Se ha añadido el nuevo contacto: " + nombre + ": " + telefono);
+        }
     }
 
     public static void main(String[] args) throws IOException{
@@ -166,6 +288,8 @@ La tarea de la función será realizar la copia del fichero dado en el parámetr
         CambioEjercicio();
         try {DividePorCero(5, 0);} catch (ArithmeticException e) {System.out.println("Esto no puede hacerse");}{System.out.println("Demo del codigo DividePorCero");}
         CambioEjercicio();
-        CopiarArchivo();
+        Copiar();
+        CambioEjercicio();
+        Final();
     }
 }
